@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050713">
+    <title>Panel de Control - Rockola</title>
+    <style>
+        :root {
+            --bg: #050713;
+            --panel: rgba(10, 15, 35, .80);
+            --panel-2: rgba(13, 18, 43, .91);
+            --line: rgba(105, 132, 255, .18);
+            --text: #f6f8ff;
+            --muted: #8794b8;
+            --cyan: #45e7ff;
+            --blue: #6078ff;
+            --purple: #8c49ff;
+            --pink: #ff2ec4;
+            --danger: #ff4778;
+            --danger-soft: rgba(255, 71, 120, .10);
+            --shadow: 0 26px 70px rgba(0, 0, 0, .44);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(83, 74, 255, .20), transparent 28rem),
+                radial-gradient(circle at 92% 12%, rgba(255, 46, 196, .16), transparent 26rem),
+                radial-gradient(circle at 50% 100%, rgba(69, 231, 255, .07), transparent 32rem),
+                var(--bg);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(102, 128, 255, .045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 128, 255, .045) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.68) 62%, transparent 100%);
+        }
+
+        button, select, input { font: inherit; }
+        button { -webkit-tap-highlight-color: transparent; }
+
+        .app-shell {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 20px 0 60px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 10px 2px 22px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(69, 231, 255, .30);
+            border-radius: 11px;
+            background: linear-gradient(145deg, rgba(69, 231, 255, .09), rgba(255, 46, 196, .15));
+            box-shadow: 0 0 26px rgba(69, 231, 255, .11);
+        }
+
+        .brand-mark::after {
+            content: "";
+            width: 15px;
+            height: 15px;
+            border: 2px solid var(--pink);
+            border-radius: 4px;
+            transform: rotate(45deg);
+            box-shadow: 0 0 10px rgba(255, 46, 196, .55);
+        }
+
+        .brand-name {
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: .16em;
+        }
+
+        .brand-sub {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 9px;
+            font-weight: 750;
+            letter-spacing: .17em;
+            text-transform: uppercase;
+        }
+
+        .system-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 11px;
+            border: 1px solid rgba(255,255,255,.09);
+            border-radius: 999px;
+            background: rgba(6, 10, 25, .74);
+            color: #b7c2df;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .system-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 11px var(--cyan);
+        }
+
+        .hero {
+            position: relative;
+            padding: 38px clamp(22px, 4vw, 44px);
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            background:
+                linear-gradient(125deg, rgba(12, 17, 40, .95), rgba(8, 11, 28, .82) 60%, rgba(28, 8, 38, .73));
+            box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.035);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            border: 1px solid rgba(69, 231, 255, .11);
+            box-shadow:
+                0 0 0 26px rgba(97, 120, 255, .025),
+                0 0 0 60px rgba(255, 46, 196, .018),
+                0 0 100px rgba(97, 120, 255, .08);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 0 64%, rgba(255,46,196,.05) 64.3% 64.7%, transparent 65% 100%);
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .eyebrow {
+            margin-bottom: 10px;
+            color: var(--cyan);
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .19em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(32px, 5vw, 57px);
+            line-height: .95;
+            letter-spacing: -.045em;
+            text-transform: uppercase;
+        }
+
+        h1 span {
+            color: transparent;
+            background: linear-gradient(90deg, var(--cyan), #7c8dff 45%, var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .hero-copy {
+            max-width: 690px;
+            margin: 14px 0 0;
+            color: #96a4c8;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .hero-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+            min-width: 210px;
+        }
+
+        .hero-chip {
+            padding: 8px 10px;
+            border: 1px solid rgba(108, 136, 255, .17);
+            border-radius: 8px;
+            background: rgba(8, 12, 31, .74);
+            color: #9eabca;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .workspace {
+            margin-top: 22px;
+            padding: 18px;
+            border: 1px solid rgba(104, 131, 255, .14);
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(9, 13, 32, .82), rgba(7, 10, 25, .70));
+            box-shadow: 0 18px 45px rgba(0,0,0,.17);
+        }
+
+        .tabs {
+            display: inline-flex;
+            width: 100%;
+            gap: 7px;
+            margin: 0 0 17px;
+            padding: 6px;
+            border: 1px solid rgba(108, 136, 255, .13);
+            border-radius: 13px;
+            background: rgba(5, 8, 22, .73);
+        }
+
+        .tab-btn {
+            position: relative;
+            flex: 1;
+            min-height: 43px;
+            margin: 0;
+            padding: 10px 14px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            background: transparent;
+            color: #7885a9;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 850;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            transition: color .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .tab-btn:hover { color: #c2cbe2; }
+
+        .tab-btn.active {
+            color: white;
+            border-color: rgba(255, 46, 196, .25);
+            background: linear-gradient(100deg, rgba(140, 73, 255, .17), rgba(255, 46, 196, .12));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 26px rgba(255,46,196,.035);
+        }
+
+        .tab-btn.active::after {
+            content: "";
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            bottom: -6px;
+            height: 2px;
+            border-radius: 99px;
+            background: linear-gradient(90deg, transparent, var(--pink), transparent);
+            box-shadow: 0 0 8px rgba(255,46,196,.6);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin: 8px 4px 15px;
+        }
+
+        .section-kicker {
+            margin-bottom: 4px;
+            color: var(--pink);
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: -.02em;
+        }
+
+        .refresh-tag {
+            padding: 6px 9px;
+            border: 1px solid rgba(69, 231, 255, .13);
+            border-radius: 8px;
+            color: #6d7da5;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: .10em;
+            text-transform: uppercase;
+        }
+
+        .queue-list, .blacklist-list {
+            display: grid;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .queue-list > p, .blacklist-list > p {
+            margin: 26px 0 !important;
+            color: #657399 !important;
+            text-align: center !important;
+            font-size: 12px;
+        }
+
+        .queue-item, .blacklist-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            min-width: 0;
+            padding: 14px 15px;
+            border: 1px solid rgba(104, 131, 255, .14);
+            border-radius: 13px;
+            background: linear-gradient(135deg, rgba(14, 19, 44, .87), rgba(8, 12, 30, .89));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+            overflow: hidden;
+            transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .queue-item::before, .blacklist-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, var(--cyan), var(--purple));
+            box-shadow: 0 0 10px rgba(69, 231, 255, .25);
+        }
+
+        .blacklist-item::before {
+            background: linear-gradient(to bottom, var(--pink), var(--danger));
+            box-shadow: 0 0 10px rgba(255, 71, 120, .25);
+        }
+
+        .queue-item:hover, .blacklist-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(69, 231, 255, .24);
+            box-shadow: 0 10px 24px rgba(0,0,0,.18);
+        }
+
+        .song-info {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+            gap: 5px;
+            padding-left: 5px;
+        }
+
+        .song-title {
+            color: #f4f7ff;
+            font-size: 13px;
+            font-weight: 850;
+            line-height: 1.35;
+        }
+
+        .song-artist {
+            color: #7c89ad;
+            font-size: 10px;
+            font-weight: 650;
+        }
+
+        .status {
+            flex: 0 0 auto;
+            padding: 7px 10px;
+            border: 1px solid rgba(69, 231, 255, .18);
+            border-radius: 999px;
+            background: rgba(69, 231, 255, .07);
+            color: #72eaff;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .blacklist-form {
+            display: grid;
+            grid-template-columns: 170px minmax(0, 1fr) auto;
+            gap: 10px;
+            margin: 0 0 14px;
+            padding: 14px;
+            border: 1px solid rgba(255, 46, 196, .13);
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(20, 13, 41, .74), rgba(10, 13, 33, .84));
+        }
+
+        .blacklist-form select,
+        .blacklist-form input {
+            min-width: 0;
+            height: 43px;
+            padding: 0 13px;
+            border: 1px solid rgba(110, 138, 255, .18);
+            border-radius: 9px;
+            outline: none;
+            color: var(--text);
+            background: #0a0f23;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .blacklist-form select { cursor: pointer; color-scheme: dark; }
+        .blacklist-form input::placeholder { color: #566487; }
+
+        .blacklist-form select:focus,
+        .blacklist-form input:focus {
+            border-color: rgba(255, 46, 196, .38);
+            box-shadow: 0 0 0 3px rgba(255, 46, 196, .055);
+        }
+
+        .btn-add, .btn-delete {
+            border: 0;
+            cursor: pointer;
+            font-weight: 900;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            transition: transform .18s ease, filter .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+
+        .btn-add {
+            min-height: 43px;
+            padding: 0 18px;
+            border-radius: 9px;
+            color: white;
+            background: linear-gradient(100deg, #8c31ff, #ff2ec4);
+            box-shadow: 0 8px 22px rgba(255, 46, 196, .13);
+            font-size: 9px;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+            box-shadow: 0 10px 27px rgba(255, 46, 196, .20);
+        }
+
+        .btn-delete {
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 71, 120, .22);
+            border-radius: 8px;
+            background: var(--danger-soft);
+            color: #ff769a;
+            font-size: 8px;
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 71, 120, .16);
+            box-shadow: 0 0 18px rgba(255,71,120,.07);
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 20px;
+            padding: 0 3px;
+            color: #526083;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 760px) {
+            .app-shell { width: min(100% - 20px, 1120px); padding-top: 10px; }
+            .brand-sub { display: none; }
+            .system-pill { font-size: 8px; }
+            .hero { padding: 29px 20px; border-radius: 20px; }
+            .hero-inner { align-items: flex-start; flex-direction: column; }
+            .hero-chips { justify-content: flex-start; min-width: 0; }
+            .workspace { padding: 12px; border-radius: 18px; }
+            .blacklist-form { grid-template-columns: 1fr; }
+            .blacklist-form select, .blacklist-form input, .btn-add { width: 100%; }
+        }
+
+        @media (max-width: 520px) {
+            .brand-name { font-size: 11px; }
+            .system-pill { padding: 7px 9px; }
+            .hero-chip:nth-child(2) { display: none; }
+            .tabs { gap: 4px; padding: 5px; }
+            .tab-btn { padding-inline: 8px; font-size: 9px; }
+            .section-header { align-items: flex-start; }
+            .refresh-tag { display: none; }
+            .queue-item, .blacklist-item { padding: 12px; }
+            .song-title { font-size: 12px; }
+            .status { padding: 6px 8px; }
+            .footer { flex-direction: column; align-items: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true"></div>
+                <div>
+                    <div class="brand-name">ROCKOLA // CONTROL</div>
+                    <div class="brand-sub">DJ Operations Console</div>
+                </div>
+            </div>
+            <div class="system-pill"><span class="system-dot"></span> System Online</div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-inner">
+                <div>
+                    <div class="eyebrow">Control Room / DJ Operations</div>
+                    <h1>Panel de <span>Control</span></h1>
+                    <p class="hero-copy">Supervisa la cola musical y administra bloqueos desde una consola visual diseñada para uso rápido durante el evento.</p>
+                </div>
+                <div class="hero-chips" aria-label="Información del sistema">
+                    <span class="hero-chip">Cola en tiempo real</span>
+                    <span class="hero-chip">Refresh 5s</span>
+                    <span class="hero-chip">Blacklist Control</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="workspace">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="cambiarPestana('cola', this)">Cola Musical</button>
+                <button class="tab-btn" onclick="cambiarPestana('blacklist', this)">Lista Negra 🚫</button>
+            </div>
+
+            <div id="cola" class="tab-content active">
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">Now in queue</div>
+                        <h2 class="section-title">Cola de reproducción</h2>
+                    </div>
+                    <span class="refresh-tag">Auto refresh · 5s</span>
+                </div>
+                <ul class="queue-list" id="colaContainer">
+                    <p style="text-align:center; color:#888;">Cargando cola...</p>
+                </ul>
+            </div>
+
+            <div id="blacklist" class="tab-content">
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">Restriction center</div>
+                        <h2 class="section-title">Lista negra</h2>
+                    </div>
+                    <span class="refresh-tag">Control de contenido</span>
+                </div>
+
+                <div class="blacklist-form">
+                    <select id="tipoBloqueo">
+                        <option value="artista">Artista</option>
+                        <option value="cancion">Canción</option>
+                    </select>
+                    <input type="text" id="valorBloqueo" placeholder="Ej. Bad Bunny o Tusa">
+                    <button class="btn-add" onclick="agregarBlacklist()">Bloquear</button>
+                </div>
+
+                <ul class="blacklist-list" id="blacklistContainer">
+                    <p style="text-align:center; color:#888;">Cargando bloqueos...</p>
+                </ul>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>Rockola Admin Console</span>
+            <span>Live Music Operations</span>
+        </footer>
+    </div>
+
+<script>
+        const API_URL = 'http://127.0.0.1:5000';
+
+        // Lógica de Pestañas
+        function cambiarPestana(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            
+            if(id === 'blacklist') cargarBlacklist();
+        }
+
+        // --- FUNCIONES DE LA COLA ---
+        async function cargarCola() {
+            try {
+                const response = await fetch(`${API_URL}/cola`);
+                const cola = await response.json();
+                const container = document.getElementById('colaContainer');
+                container.innerHTML = ''; 
+
+                if (cola.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#888;">La cola está vacía.</p>';
+                    return;
+                }
+
+                cola.forEach((cancion, index) => {
+                    container.innerHTML += `
+                        <li class="queue-item">
+                            <div class="song-info">
+                                <span class="song-title">${index + 1}. ${cancion.titulo}</span>
+                                <span class="song-artist">${cancion.artista}</span>
+                            </div>
+                            <span class="status">${cancion.estado}</span>
+                        </li>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar cola:", error);
+            }
+        }
+
+        // --- FUNCIONES DE LA LISTA NEGRA ---
+        async function cargarBlacklist() {
+            try {
+                const response = await fetch(`${API_URL}/blacklist`);
+                const items = await response.json();
+                const container = document.getElementById('blacklistContainer');
+                container.innerHTML = '';
+
+                if (items.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#888;">No hay bloqueos activos.</p>';
+                    return;
+                }
+
+                items.forEach(item => {
+                    const tipoTexto = item.tipo === 'artista' ? '🎤 Artista' : '🎵 Canción';
+                    container.innerHTML += `
+                        <li class="blacklist-item">
+                            <div class="song-info">
+                                <span class="song-title">${item.valor}</span>
+                                <span class="song-artist">${tipoTexto}</span>
+                            </div>
+                            <button class="btn-delete" onclick="borrarBlacklist(${item.id})">Quitar</button>
+                        </li>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar blacklist:", error);
+            }
+        }
+
+        async function agregarBlacklist() {
+            const tipo = document.getElementById('tipoBloqueo').value;
+            const valor = document.getElementById('valorBloqueo').value;
+            
+            if (!valor) return alert("Escribe un nombre para bloquear");
+
+            await fetch(`${API_URL}/blacklist`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo, valor })
+            });
+            
+            document.getElementById('valorBloqueo').value = ''; // Limpiar input
+            cargarBlacklist(); // Recargar la lista
+        }
+
+        async function borrarBlacklist(id) {
+            await fetch(`${API_URL}/blacklist/${id}`, { method: 'DELETE' });
+            cargarBlacklist();
+        }
+
+        // Iniciar
+        cargarCola();
+        setInterval(cargarCola, 5000); // Actualizar cola cada 5s
+    </script>
+</body>
+</html>
