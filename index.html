@@ -717,9 +717,6 @@
     </div>
 
 <script>
-        // PEGA TUS CREDENCIALES AQUÍ
-        const clientId = '1bb87d2a06f142f390d433830165c90e';
-        const clientSecret = '429758127bcb4cb89bcbbd9293ea2236';
 
         async function obtenerToken() {
             const result = await fetch('https://accounts.spotify.com/api/token', {
@@ -776,7 +773,7 @@
         }
 
 async function seleccionarCancion(uri, title, artist) {
-    const backendUrl = 'http://127.0.0.1:5000/agregar'; 
+    const backendUrl = 'https://rockola-backend-uxgl.onrender.com/agregar'; 
 
     try {
         const response = await fetch(backendUrl, {
