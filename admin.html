@@ -618,7 +618,7 @@
             if(id === 'blacklist') cargarBlacklist();
         }
 
-        // --- FUNCIONES DE LA COLA ---
+// --- FUNCIONES DE LA COLA ---
         async function cargarCola() {
             try {
                 const response = await fetch(`${API_URL}/cola`);
@@ -632,11 +632,23 @@
                 }
 
                 cola.forEach((cancion, index) => {
+                    // Solo mostramos los botones si la canción está en espera
+                    let controles = '';
+                    if (cancion.estado === 'En cola 🕒') {
+                        controles = `
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <button class="btn-delete" style="padding: 5px 10px; font-size: 9px;" onclick="quitarDeCola('${cancion.uri}')">Quitar de vista</button>
+                                <button class="btn-add" style="padding: 5px 10px; font-size: 9px;" onclick="bloquearRapido('${cancion.titulo}')">🚫 Bloquear</button>
+                            </div>
+                        `;
+                    }
+
                     container.innerHTML += `
                         <li class="queue-item">
                             <div class="song-info">
                                 <span class="song-title">${index + 1}. ${cancion.titulo}</span>
                                 <span class="song-artist">${cancion.artista}</span>
+                                ${controles}
                             </div>
                             <span class="status">${cancion.estado}</span>
                         </li>
@@ -645,6 +657,26 @@
             } catch (error) {
                 console.error("Error al cargar cola:", error);
             }
+        }
+
+        // --- NUEVAS FUNCIONES DE BOTONES RÁPIDOS ---
+        async function quitarDeCola(uri) {
+            if(!confirm("¿Ocultar esta canción de tu panel? (Tendrás que saltarla manualmente en Spotify si empieza a sonar)")) return;
+            
+            await fetch(`${API_URL}/cola/${uri}`, { method: 'DELETE' });
+            cargarCola();
+        }
+
+        async function bloquearRapido(titulo) {
+            if(!confirm(`¿Mandar "${titulo}" a la lista negra?`)) return;
+            
+            await fetch(`${API_URL}/blacklist`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'cancion', valor: titulo })
+            });
+            alert("¡Canción bloqueada con éxito!");
+            cargarBlacklist();
         }
 
         // --- FUNCIONES DE LA LISTA NEGRA ---
