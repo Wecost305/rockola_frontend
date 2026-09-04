@@ -488,6 +488,33 @@
             box-shadow: 0 0 18px rgba(255,71,120,.07);
         }
 
+        .btn-spotify {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border: 1px solid rgba(29, 185, 84, .4);
+            border-radius: 999px;
+            background: rgba(29, 185, 84, .1);
+            color: #1ed760;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all .2s ease;
+        }
+
+        .btn-spotify:hover {
+            background: rgba(29, 185, 84, .2);
+            box-shadow: 0 0 15px rgba(29, 185, 84, .2);
+        }
+        
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         .footer {
             display: flex;
             justify-content: space-between;
@@ -530,7 +557,7 @@
 </head>
 <body>
     <div class="app-shell">
-        <header class="topbar">
+<header class="topbar">
             <div class="brand">
                 <div class="brand-mark" aria-hidden="true"></div>
                 <div>
@@ -538,7 +565,10 @@
                     <div class="brand-sub">DJ Operations Console</div>
                 </div>
             </div>
-            <div class="system-pill"><span class="system-dot"></span> System Online</div>
+            <div class="topbar-right">
+                <a href="https://rockola-backend-uxgl.onrender.com/login" target="_blank" class="btn-spotify">🎧 Reconectar Spotify</a>
+                <div class="system-pill"><span class="system-dot"></span> System Online</div>
+            </div>
         </header>
 
         <section class="hero">
